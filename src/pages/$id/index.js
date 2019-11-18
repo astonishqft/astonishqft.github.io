@@ -1,9 +1,18 @@
-import React, {useState, useEffect} from 'react';
-import { getIssueDetail, createComment } from '@/services';
-import { Comment, Tooltip, List, Avatar, Form, Input, Button } from 'antd';
+import React, { Component } from 'react';
+import { connect } from 'dva';
+import { 
+  Comment,
+  Tooltip,
+  List,
+  Avatar,
+  Form,
+  Input,
+  Button,
+  Icon,
+} from 'antd';
 import moment from 'moment';
-import Link from 'umi/link';
 import Markdown from '@/components/markdown';
+import 'github-markdown-css/github-markdown.css'
 
 const { TextArea } = Input;
 
@@ -20,149 +29,246 @@ const Editor = ({ onChange, onSubmit, submitting, value }) => (
   </div>
 );
 
-export default (props) => {
-  const [ detail, setDetail] = useState('');
-  const [ value, setVale ] = useState('');
-  const [comments, setComments] = useState([]);
-  const [ issueNumber, setIssueNumber ] = useState('');
+@connect(({ home, user }) => {
+  return { 
+    home,
+    user,
+  };
+})
+class Detail extends Component {
+  constructor(props) {
+    super(props);
+    this.id = '';
+  }
+  state = {
+    content: '',
+    value : '',
+    detail: '',
+    commentList: [],
+    action: null,
+    reactions: {
+      '+1': false,
+      '-1': false,
+      'heart': false,
+      'laugh': false,
+      'confused': false,
+      'hooray': false,
+      'rocket': false,
+      'eyes': false,
+    }
+  }
 
-  const [submitting, setSubmitting] = useState(false);
-
-
-  useEffect(() => {
+  componentDidMount() {
     const { match: {
       params: {
         id,
       }
-    } } = props;
+    }, dispatch } = this.props;
 
-    setIssueNumber(id);
-    
+    this.id = id;
 
-    getIssueDetail(id).then(result => {
-      const { status, data: { body} } = result;
-      if(status === 200) {
-      setDetail(body);
-
-      }
-      console.log(7777, body)
+    dispatch({
+      type: 'home/getIssueDetail',
+      payload: { id }
     })
-  }, [props]);
 
+    dispatch({
+      type: 'home/getCommentList',
+      payload: { id }
+    });
+  }
 
-  const data = [
-    {
-      actions: [<span key="comment-list-reply-to-0">Reply to</span>],
-      author: 'Han Solo',
-      avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png',
-      content: (
-        <p>
-          We supply a series of design principles, practical patterns and high quality design
-          resources (Sketch and Axure), to help people create their product prototypes beautifully and
-          efficiently.
-      </p>
-      ),
-      datetime: (
-        <Tooltip
-          title={moment()
-            .subtract(1, 'days')
-            .format('YYYY-MM-DD HH:mm:ss')}
-        >
-          <span>
-            {moment()
-              .subtract(1, 'days')
-              .fromNow()}
-          </span>
-        </Tooltip>
-      ),
-    },
-    {
-      actions: [<span key="comment-list-reply-to-0">Reply to</span>],
-      author: 'Han Solo',
-      avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png',
-      content: (
-        <p>
-          We supply a series of design principles, practical patterns and high quality design
-          resources (Sketch and Axure), to help people create their product prototypes beautifully and
-          efficiently.
-      </p>
-      ),
-      datetime: (
-        <Tooltip
-          title={moment()
-            .subtract(2, 'days')
-            .format('YYYY-MM-DD HH:mm:ss')}
-        >
-          <span>
-            {moment()
-              .subtract(2, 'days')
-              .fromNow()}
-          </span>
-        </Tooltip>
-      ),
-    },
-  ];
-
-  const handleSubmit = () => {
+  handleSubmit = () => {
+    const { dispatch } = this.props;
+    const { value } = this.state;
     if (!value) {
       return;
     }
 
-    setSubmitting(true);
-
-    createComment(issueNumber, value).then(result => {
-      console.log(result, 66666)
+    dispatch({
+      type: 'home/createComment',
+      payload: {
+        id: this.id,
+        value,
+      }
     });
-
   };
 
-  const handleChange = e => {
-    setVale(e.target.value);
+  handleChange = e => {
+    this.setState({
+      value: e.target.value
+    });
   };
 
-  return (
-    <div>
-      <Markdown dataSource={detail} />
-      <List
-        className="comment-list"
-        header={`${data.length} replies`}
-        itemLayout="horizontal"
-        dataSource={data}
-        renderItem={item => (
-          <li>
-            <Comment
-              actions={item.actions}
-              author={item.author}
-              avatar={item.avatar}
-              content={item.content}
-              datetime={item.datetime}
+  // 格式化时间
+  formatTime = time => {
+    return (
+      <span>
+        发表于<span>{moment(time).fromNow()}</span>
+      </span>
+    )
+  }
+
+  // 表情 type: +1, -1, laugh, confused, heart, hooray, rocket, eyes
+  handleReaction = (item, type) => {
+    const { dispatch } = this.props;
+    const { reactions } = this.state;
+    this.setState({
+      action: 'liked',
+      reactions: { 
+        ...reactions,
+        ...{
+          [type]: true,
+        }
+      }
+    });
+    dispatch({
+      type: 'home/createReaction',
+      payload: {
+        commentId: item.id,
+        issueId: this.id,
+        type,
+      }
+    })
+  };
+
+  // 格式化actions 
+  // 表情 type: +1, -1, laugh, confused, heart, hooray, rocket, eyes
+  formatAction = item => {
+    const { reactions = {} } = item;
+
+    return [
+      <span key="comment-basic-like">
+        <Tooltip title="+1">
+          <Icon
+            type="like"
+            theme={this.state.reactions['+1'] ? 'filled' : 'outlined'}
+            onClick={() => this.handleReaction(item, '+1')}
+          />
+        </Tooltip>
+        <span style={{ paddingLeft: 8, cursor: 'auto' }}>{reactions['+1']}</span>
+      </span>,
+      <span key=' key="comment-basic-dislike"'>
+        <Tooltip title="-1">
+          <Icon
+            type="dislike"
+            theme={this.state.reactions['-1'] ? 'filled' : 'outlined'}
+            onClick={() => this.handleReaction(item, '-1')}
+          />
+        </Tooltip>
+        <span style={{ paddingLeft: 8, cursor: 'auto' }}>{reactions['-1']}</span>
+      </span>,
+      <span key=' key="comment-basic-heart"'>
+        <Tooltip title="Heart">
+          <Icon
+            type="heart"
+            theme={this.state.reactions['heart'] ? 'filled' : 'outlined'}
+            onClick={() => this.handleReaction(item, 'heart')}
+          />
+        </Tooltip>
+        <span style={{ paddingLeft: 8, cursor: 'auto' }}>{reactions['heart']}</span>
+      </span>,
+      <span key=' key="comment-basic-rocket"'>
+        <Tooltip title="Rocket">
+          <Icon
+            type="rocket"
+            theme={this.state.reactions['rocket'] ? 'filled' : 'outlined'}
+            onClick={() => this.handleReaction(item, 'rocket')}
+          />
+        </Tooltip>
+        <span style={{ paddingLeft: 8, cursor: 'auto' }}>{reactions['rocket']}</span>
+      </span>,
+      <span key=' key="comment-basic-laugh"'>
+        <Tooltip title="Laugh">
+          <Icon
+            type="smile"
+            theme={this.state.reactions['laugh'] ? 'filled' : 'outlined'}
+            onClick={() => this.handleReaction(item, 'laugh')}
+          />
+        </Tooltip>
+        <span style={{ paddingLeft: 8, cursor: 'auto' }}>{reactions['laugh']}</span>
+      </span>,
+      <span key=' key="comment-basic-confused"'>
+        <Tooltip title="Confused">
+          <Icon
+            type="frown"
+            theme={this.state.reactions['confused'] ? 'filled' : 'outlined'}
+            onClick={() => this.handleReaction(item, 'confused')}
+          />
+        </Tooltip>
+        <span style={{ paddingLeft: 8, cursor: 'auto' }}>{reactions['confused']}</span>
+      </span>,
+      <span key=' key="comment-basic-eyes"'>
+        <Tooltip title="Eyes">
+          <Icon
+            type="eye"
+            theme={this.state.reactions['eyes'] ? 'filled' : 'outlined'}
+            onClick={() => this.handleReaction(item, 'eyes')}
+          />
+        </Tooltip>
+        <span style={{ paddingLeft: 8, cursor: 'auto' }}>{reactions['eyes']}</span>
+      </span>,
+      <span key="comment-basic-reply-to">回复</span>,
+    ];
+  }
+
+  render() {
+    const { 
+      value,
+   } = this.state;
+    const { 
+      home: {
+        commentList = [],
+        issueDetail: { body = ''},
+      },
+      user: { userInfo = {} }
+    } = this.props;
+
+    return (
+      <div>
+        <Markdown dataSource={body} />
+        <List
+          className="comment-list"
+          header={`${commentList.length} replies`}
+          itemLayout="horizontal"
+          dataSource={commentList}
+          renderItem={item => (
+            <li>
+              <Comment
+                actions={this.formatAction(item)}
+                author={item.author_association}
+                avatar={item.user.avatar_url}
+                content={< Markdown dataSource={item.body} />}
+                datetime={this.formatTime(item.updated_at)}
+              />
+            </li>
+          )}
+        />
+
+        <Comment
+          avatar={
+            <Avatar
+              src={userInfo.avatar_url ? userInfo.avatar_url : 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'}
+              alt="Han Solo"
             />
-          </li>
-        )}
-      />
+          }
+          content={
+            <Editor
+              onChange={this.handleChange}
+              onSubmit={this.handleSubmit}
+              submitting={this.submitting}
+              value={value}
+            />
+          }
+        />
 
-      <Comment
-        avatar={
-          <Avatar
-            src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
-            alt="Han Solo"
-          />
-        }
-        content={
-          <Editor
-            onChange={handleChange}
-            onSubmit={handleSubmit}
-            submitting={submitting}
-            value={value}
-          />
-        }
-      />
-      
-      <Link to="https://github.com/login/oauth/authorize?client_id=Iv1.8fd715c6f01d9c3b&redirect_uri=https://localhost:8000">Github</Link>
-      <Button
-        onClick={() => {
-          window.open('https://github.com/login/oauth/authorize?client_id=Iv1.8fd715c6f01d9c3b&redirect_uri=http://localhost:8000')
-      }}>Login with github</Button>
-    </div>
-  )
+        <Button
+          onClick={() => {
+            window.location.href = 'https://github.com/login/oauth/authorize?client_id=Iv1.8fd715c6f01d9c3b&redirect_uri=http://localhost:8000';
+          }}>Login with github</Button>
+      </div>
+    )
+  }
 }
+
+export default Detail;

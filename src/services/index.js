@@ -17,6 +17,17 @@ const getIssueDetail = id => {
   });
 }
 
+const getUser = token => {
+  return axios({
+    method: 'GET',
+    url: 'https://api.github.com/user',
+    headers: {
+      accept: 'application/json',
+      Authorization: `token ${token}`
+    }
+  });
+}
+
 const getReactionList = (comment_id) => {
   return axios({
     method: 'GET',
@@ -25,27 +36,56 @@ const getReactionList = (comment_id) => {
 }
 
 // Create reaction for an issue comment
-const createReaction = (comment_id,) => {
+const createReaction = (comment_id, type) => {
+  let headers = {}
+  const token = localStorage.getItem('github_token');
+  if(token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
   return axios({
-    method: 'POST',
-    headers: { 'Accept': 'application/vnd.github.squirrel-girl-preview+json' },
-    url: `${githubApi}/issues/comments/${comment_id}/reactions`
+    method: 'post',
+    headers: { 'Accept': 'application/vnd.github.squirrel-girl-preview', ...headers },
+    url: `${githubApi}/issues/comments/${comment_id}/reactions`,
+    data: {
+      content: type,
+    }
   });
+}
+
+function generateUUID() {
+  var d = new Date().getTime();
+  if (window.performance && typeof window.performance.now === "function") {
+    d += performance.now(); //use high-precision timer if available
+  }
+  var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = (d + Math.random() * 16) % 16 | 0;
+    d = Math.floor(d / 16);
+    return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+  return uuid;
 }
 
 // List comments on an issue
 const getCommentByIssueId = issue_number => {
   return axios({
     method: 'GET',
-    url: `${githubApi}/issues/${issue_number}/comments`,
+    headers: {
+      // 'Cache-Control': 'no-cache',
+      'Accept': 'application/vnd.github.squirrel-girl-preview' },
+    url: `${githubApi}/issues/${issue_number}/comments?${generateUUID()}`,
   });
 }
 
 // Create a comment
 const createComment = (issue_number, body) => {
+  let headers = {}
+  const token = localStorage.getItem('github_token');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
   return axios({
-    method: 'POST',
-    headers: { 'Accept': 'application/vnd.github.squirrel-girl-preview+json' },
+    method: 'post',
+    headers: { ...headers },
     url: `${githubApi}/issues/${ issue_number}/comments`,
     data: {
       body,
@@ -53,15 +93,15 @@ const createComment = (issue_number, body) => {
   });
 }
 
-const githubAuth = () => {
-  // return axios({
-  //   method: 'POST',
-  //   // headers: { 'Accept': 'application/vnd.github.squirrel-girl-preview+json' },
-  //   // url: `${githubApi}/issues/${issue_number}/comments`,
-  //   // data: {
-  //   //   body,
-  //   // },
-  // });
+const githubAuth = (code) => {
+  // clientID = CLIENT_ID, clientSecret = CLIENT_SECRET, code
+  const clientID = 'Iv1.8fd715c6f01d9c3b';
+  const clientSecret = '092bfa8ea626471ce1de470b780cf865456be73b';
+  // const code = '68eaa8d392aebe765052'
+  return axios({
+    method: 'POST',
+    url: `https://now-blog-server.1551601581.now.sh/api/githubAuth?code=${code}&clientID=${clientID}&clientSecret=${clientSecret}&=88877766`,
+  });
 }
 
 export {
@@ -72,4 +112,5 @@ export {
   getCommentByIssueId,
   createComment,
   githubAuth,
+  getUser,
 };

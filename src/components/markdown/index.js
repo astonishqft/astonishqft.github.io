@@ -1,6 +1,8 @@
 import ReactMarkdown from 'react-markdown';
 import CodeBlock from '@/components/markdown/codeBlock';
-import HeadingBlock from '@/components/markdown/headingBlock';
+// import HeadingBlock from '@/components/markdown/headingBlock';
+import 'github-markdown-css';
+import './index.less';
 
 export default (props) => {
   const { dataSource } = props;
@@ -9,10 +11,10 @@ export default (props) => {
       escapeHtml={false}
       renderers={{
         code: CodeBlock,
-        heading: HeadingBlock
+        // heading: HeadingBlock
       }}
+      className="markdown-body"
       source={dataSource}
-      // source={item.body.match(/<p>(.*?)<\/p>/)[0]}
     />
   )
 }
