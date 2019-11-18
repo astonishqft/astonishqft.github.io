@@ -1,6 +1,4 @@
 import React, { PureComponent } from "react";
-import PropTypes from "prop-types";
-import cls from "classnames";
 import Heading from "./heading";
 
 class HeadingBlock extends PureComponent {

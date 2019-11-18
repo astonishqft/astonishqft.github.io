@@ -12,7 +12,8 @@ import {
 } from 'antd';
 import moment from 'moment';
 import Markdown from '@/components/markdown';
-import 'github-markdown-css/github-markdown.css'
+// import 'github-markdown-css/github-markdown.css';
+import styles from './index.less'
 
 const { TextArea } = Input;
 
@@ -46,16 +47,6 @@ class Detail extends Component {
     detail: '',
     commentList: [],
     action: null,
-    reactions: {
-      '+1': false,
-      '-1': false,
-      'heart': false,
-      'laugh': false,
-      'confused': false,
-      'hooray': false,
-      'rocket': false,
-      'eyes': false,
-    }
   }
 
   componentDidMount() {
@@ -112,15 +103,8 @@ class Detail extends Component {
   // 表情 type: +1, -1, laugh, confused, heart, hooray, rocket, eyes
   handleReaction = (item, type) => {
     const { dispatch } = this.props;
-    const { reactions } = this.state;
     this.setState({
       action: 'liked',
-      reactions: { 
-        ...reactions,
-        ...{
-          [type]: true,
-        }
-      }
     });
     dispatch({
       type: 'home/createReaction',
@@ -136,13 +120,11 @@ class Detail extends Component {
   // 表情 type: +1, -1, laugh, confused, heart, hooray, rocket, eyes
   formatAction = item => {
     const { reactions = {} } = item;
-
     return [
       <span key="comment-basic-like">
         <Tooltip title="+1">
           <Icon
             type="like"
-            theme={this.state.reactions['+1'] ? 'filled' : 'outlined'}
             onClick={() => this.handleReaction(item, '+1')}
           />
         </Tooltip>
@@ -152,7 +134,6 @@ class Detail extends Component {
         <Tooltip title="-1">
           <Icon
             type="dislike"
-            theme={this.state.reactions['-1'] ? 'filled' : 'outlined'}
             onClick={() => this.handleReaction(item, '-1')}
           />
         </Tooltip>
@@ -162,7 +143,6 @@ class Detail extends Component {
         <Tooltip title="Heart">
           <Icon
             type="heart"
-            theme={this.state.reactions['heart'] ? 'filled' : 'outlined'}
             onClick={() => this.handleReaction(item, 'heart')}
           />
         </Tooltip>
@@ -172,7 +152,6 @@ class Detail extends Component {
         <Tooltip title="Rocket">
           <Icon
             type="rocket"
-            theme={this.state.reactions['rocket'] ? 'filled' : 'outlined'}
             onClick={() => this.handleReaction(item, 'rocket')}
           />
         </Tooltip>
@@ -182,7 +161,6 @@ class Detail extends Component {
         <Tooltip title="Laugh">
           <Icon
             type="smile"
-            theme={this.state.reactions['laugh'] ? 'filled' : 'outlined'}
             onClick={() => this.handleReaction(item, 'laugh')}
           />
         </Tooltip>
@@ -192,7 +170,6 @@ class Detail extends Component {
         <Tooltip title="Confused">
           <Icon
             type="frown"
-            theme={this.state.reactions['confused'] ? 'filled' : 'outlined'}
             onClick={() => this.handleReaction(item, 'confused')}
           />
         </Tooltip>
@@ -202,7 +179,6 @@ class Detail extends Component {
         <Tooltip title="Eyes">
           <Icon
             type="eye"
-            theme={this.state.reactions['eyes'] ? 'filled' : 'outlined'}
             onClick={() => this.handleReaction(item, 'eyes')}
           />
         </Tooltip>
@@ -225,7 +201,7 @@ class Detail extends Component {
     } = this.props;
 
     return (
-      <div>
+      <div className={styles.detail}>
         <Markdown dataSource={body} />
         <List
           className="comment-list"

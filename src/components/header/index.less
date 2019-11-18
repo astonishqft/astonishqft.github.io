@@ -1,8 +1,28 @@
-.root {
-  height: '61px';
+.header {
+  position: fixed;
+  top:0;
+  left: 0;
+  right: 0;
   background: #fff;
-  border-bottom: 1px solid black;
-  .avatar {
-    padding-left:20px;
+  border-bottom: 1px solid rgba(0,0,0,.15);
+  z-index: 999;
+  .container{
+    display: flex;
+    height: 50px;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 935px;
+    margin: 0 auto;
+  }
+  .title {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  .tool {
+    display: flex;
+    align-items: center;
+    .avatar {
+      margin-left:20px;
+    }
   }
 }

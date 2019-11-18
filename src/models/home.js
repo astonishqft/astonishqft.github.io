@@ -3,6 +3,7 @@ import {
   createComment,
   getIssueDetail,
   createReaction,
+  getIssuesList,
 } from '@/services';
 
 import { message } from 'antd';
@@ -11,7 +12,9 @@ export default {
   namespace: 'home',
   state: {
     commentList: [],
-    issueDetail: ''
+    issueDetail: '',
+    issuesList: [],
+    copyIssueList: [],
   },
   effects: {
     * getCommentList({ payload }, { call, put }) {
@@ -21,10 +24,21 @@ export default {
         yield put({
           type: "save",
           payload: {
-            commentList: data
+            commentList: data,
           },
         });
       }
+    },
+
+    * getIssuesList(_, { call, put }) {
+      const { data } = yield call(getIssuesList);
+      yield put({
+        type: 'save',
+        payload: {
+          issuesList: data,
+          copyIssueList: data,
+        }
+      })
     },
 
     * getIssueDetail({ payload }, { call, put }) {
@@ -76,5 +90,20 @@ export default {
       ...state,
       ...payload
     }),
+    search: (state, { payload }) => {
+      const { keyword } = payload;
+      const { issuesList = [], copyIssueList = {} } = state;
+      let list = [];
+      if (keyword && keyword !== '') {
+        const regx = new RegExp(keyword, 'i')
+        list = issuesList.filter(article => regx.test(article.body))
+      } else if(keyword === '') {
+        list = copyIssueList;
+      }
+      return {
+        ...state,
+        issuesList: list,
+      }
+    }
   },
 };
