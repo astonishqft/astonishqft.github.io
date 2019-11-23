@@ -17,7 +17,18 @@ import styles from './index.less'
 
 const { TextArea } = Input;
 
-
+const Editor = ({ onChange, onSubmit, submitting, value }) => (
+  <div>
+    <Form.Item>
+      <TextArea rows={4} onChange={onChange} value={value} />
+    </Form.Item>
+    <Form.Item>
+      <Button htmlType="submit" loading={submitting} onClick={onSubmit} type="primary">
+        添加评论
+      </Button>
+    </Form.Item>
+  </div>
+);
 
 @connect(({ home, user }) => {
   return {
@@ -33,7 +44,7 @@ class Detail extends Component {
   }
   state = {
     content: '',
-    value: '',
+    comment: '',
     detail: '',
     commentList: [],
     action: null,
@@ -61,20 +72,20 @@ class Detail extends Component {
 
   handleSubmit = () => {
     const { dispatch } = this.props;
-    const { value } = this.state;
-    if (!value) {
+    const { comment } = this.state;
+    if (!comment) {
       return;
     }
     dispatch({
       type: 'home/createComment',
       payload: {
         id: this.id,
-        value,
+        value: comment,
       }
     }).then(data => {
       if(data) {
         this.setState({
-          value: '',
+          comment: '',
         });
       }
     });
@@ -82,7 +93,7 @@ class Detail extends Component {
 
   handleChange = e => {
     this.setState({
-      value: e.target.value
+      comment: e.target.value
     });
   };
 
@@ -112,26 +123,17 @@ class Detail extends Component {
   };
 
   handleReply = item => {
-    const { user: { userInfo = {} } } = this.props;
-
-    const replayList = item.body.split('\n\n');
-    let newList = [];
-    // if(replayList.length !== 0) {
-    //   newList = replayList.map(re => `> ${re}`)
-    //   this.setState({
-    //     value: newList.join('\n\n'),
-    //   });
-    // } else {
-      const replayText = `> ${item.body} \n\n  `;
-    
-    console.log('uuuuu', this.commentText)
-    console.log('uuuuu', this.commentText.textAreaRef)
-
-    this.commentText.input.focus();
-      this.setState({
-        value: replayText,
-      });
-    // }
+    const { comment } = this.state
+    const replyCommentBody = item.body
+    let replyCommentArray = replyCommentBody.split('\n')
+    replyCommentArray.unshift(`@${item.user.login}`)
+    replyCommentArray = replyCommentArray.map(t => `> ${t}`)
+    replyCommentArray.push('')
+    replyCommentArray.push('')
+    if (comment) replyCommentArray.unshift('')
+    this.setState({ comment: replyCommentArray.join('\n') }, () => {
+      this.commentText.focus();
+    })
   }
 
   // 格式化actions 
@@ -208,7 +210,7 @@ class Detail extends Component {
 
   render() {
     const {
-      value,
+      comment,
     } = this.state;
     const {
       home: {
@@ -219,19 +221,6 @@ class Detail extends Component {
     } = this.props;
 
     const isLogin = userInfo.isLogin ? true : false;
-
-    const Editor = ({ onChange, onSubmit, submitting, value }) => (
-      <div>
-        <Form.Item>
-          <TextArea rows={4} onChange={onChange} value={value} ref={ref => this.commentText = ref} />
-        </Form.Item>
-        <Form.Item>
-          <Button htmlType="submit" loading={submitting} onClick={onSubmit} type="primary">
-            添加评论
-      </Button>
-        </Form.Item>
-      </div>
-    );
 
     return (
       <div className={styles.detail}>
@@ -263,12 +252,22 @@ class Detail extends Component {
                 />
               }
               content={
-                <Editor
+                <TextArea
+                  ref={t => { this.commentText = t }}
+                  value={comment}
+                  rows={4}
                   onChange={this.handleChange}
-                  onSubmit={this.handleSubmit}
-                  submitting={this.submitting}
-                  value={value}
+                  onFocus={this.handleCommentFocus}
+                  onBlur={this.handleCommentBlur}
+                  onKeyDown={this.handleCommentKeyDown}
                 />
+                // <Editor
+                //   ref = {textarea => this.commentText = textarea}
+                //   onChange={this.handleChange}
+                //   onSubmit={this.handleSubmit}
+                //   submitting={this.submitting}
+                //   value={comment}
+                // />
               }
             />
           ) : null
