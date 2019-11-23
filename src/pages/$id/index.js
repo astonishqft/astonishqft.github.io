@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { 
+import {
   Comment,
   Tooltip,
   List,
@@ -17,21 +17,10 @@ import styles from './index.less'
 
 const { TextArea } = Input;
 
-const Editor = ({ onChange, onSubmit, submitting, value }) => (
-  <div>
-    <Form.Item>
-      <TextArea rows={4} onChange={onChange} value={value} />
-    </Form.Item>
-    <Form.Item>
-      <Button htmlType="submit" loading={submitting} onClick={onSubmit} type="primary">
-        Add Comment
-      </Button>
-    </Form.Item>
-  </div>
-);
+
 
 @connect(({ home, user }) => {
-  return { 
+  return {
     home,
     user,
   };
@@ -40,10 +29,11 @@ class Detail extends Component {
   constructor(props) {
     super(props);
     this.id = '';
+    this.commentText = null;
   }
   state = {
     content: '',
-    value : '',
+    value: '',
     detail: '',
     commentList: [],
     action: null,
@@ -75,12 +65,17 @@ class Detail extends Component {
     if (!value) {
       return;
     }
-
     dispatch({
       type: 'home/createComment',
       payload: {
         id: this.id,
         value,
+      }
+    }).then(data => {
+      if(data) {
+        this.setState({
+          value: '',
+        });
       }
     });
   };
@@ -115,6 +110,29 @@ class Detail extends Component {
       }
     })
   };
+
+  handleReply = item => {
+    const { user: { userInfo = {} } } = this.props;
+
+    const replayList = item.body.split('\n\n');
+    let newList = [];
+    // if(replayList.length !== 0) {
+    //   newList = replayList.map(re => `> ${re}`)
+    //   this.setState({
+    //     value: newList.join('\n\n'),
+    //   });
+    // } else {
+      const replayText = `> ${item.body} \n\n  `;
+    
+    console.log('uuuuu', this.commentText)
+    console.log('uuuuu', this.commentText.textAreaRef)
+
+    this.commentText.input.focus();
+      this.setState({
+        value: replayText,
+      });
+    // }
+  }
 
   // 格式化actions 
   // 表情 type: +1, -1, laugh, confused, heart, hooray, rocket, eyes
@@ -184,28 +202,43 @@ class Detail extends Component {
         </Tooltip>
         <span style={{ paddingLeft: 8, cursor: 'auto' }}>{reactions['eyes']}</span>
       </span>,
-      <span key="comment-basic-reply-to">回复</span>,
+      <span key="comment-basic-reply-to" onClick={() => this.handleReply(item)}>回复</span>,
     ];
   }
 
   render() {
-    const { 
+    const {
       value,
-   } = this.state;
-    const { 
+    } = this.state;
+    const {
       home: {
         commentList = [],
-        issueDetail: { body = ''},
+        issueDetail: { body = '' },
       },
       user: { userInfo = {} }
     } = this.props;
+
+    const isLogin = userInfo.isLogin ? true : false;
+
+    const Editor = ({ onChange, onSubmit, submitting, value }) => (
+      <div>
+        <Form.Item>
+          <TextArea rows={4} onChange={onChange} value={value} ref={ref => this.commentText = ref} />
+        </Form.Item>
+        <Form.Item>
+          <Button htmlType="submit" loading={submitting} onClick={onSubmit} type="primary">
+            添加评论
+      </Button>
+        </Form.Item>
+      </div>
+    );
 
     return (
       <div className={styles.detail}>
         <Markdown dataSource={body} />
         <List
           className="comment-list"
-          header={`${commentList.length} replies`}
+          header={`共${commentList.length}条回复`}
           itemLayout="horizontal"
           dataSource={commentList}
           renderItem={item => (
@@ -220,28 +253,40 @@ class Detail extends Component {
             </li>
           )}
         />
-
-        <Comment
-          avatar={
-            <Avatar
-              src={userInfo.avatar_url ? userInfo.avatar_url : 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'}
-              alt="Han Solo"
+        {
+          isLogin ?  (
+            <Comment
+              avatar={
+                <Avatar
+                  src={userInfo.avatar_url ? userInfo.avatar_url : 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'}
+                  alt="Use photo"
+                />
+              }
+              content={
+                <Editor
+                  onChange={this.handleChange}
+                  onSubmit={this.handleSubmit}
+                  submitting={this.submitting}
+                  value={value}
+                />
+              }
             />
-          }
-          content={
-            <Editor
-              onChange={this.handleChange}
-              onSubmit={this.handleSubmit}
-              submitting={this.submitting}
-              value={value}
-            />
-          }
-        />
+          ) : null
+        }
 
-        <Button
-          onClick={() => {
-            window.location.href = 'https://github.com/login/oauth/authorize?client_id=Iv1.8fd715c6f01d9c3b&redirect_uri=http://localhost:8000';
-          }}>Login with github</Button>
+        {
+          !isLogin ? (
+            <div className={styles.loginWrap}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  window.location.href = 'https://github.com/login/oauth/authorize?client_id=Iv1.8fd715c6f01d9c3b&redirect_uri=http://localhost:8000';
+                }}>
+                github登录
+              </Button>
+            </div>
+          ) : null
+        }
       </div>
     )
   }

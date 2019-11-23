@@ -59,7 +59,6 @@ export default {
     * createComment({ payload }, { call, put }) {
       const { id, value } = payload;
       const { status } = yield call(createComment, id, value);
-      debugger
       if (status === 201) {
         yield put({
           type: "getCommentList",
@@ -68,6 +67,7 @@ export default {
           },
         });
         message.success('添加成功')
+        return true;
       }
     },
 
@@ -81,7 +81,6 @@ export default {
             id: issueId,
           },
         });
-        // message.success('添加成功')
       }
     },
   },

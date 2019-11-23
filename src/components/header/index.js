@@ -75,7 +75,7 @@ class Header extends React.Component {
               src={avatarUrl}
             />
             <Dropdown overlay={this.renderMenu()}>
-              <Icon type="more" />
+              <Icon type="more" style={{ color: '#1DA57A', fontSize: 34 }} />
             </Dropdown>
           </div>
 
