@@ -9,31 +9,22 @@ import {
   Input,
   Button,
   Icon,
+  Skeleton,
+  message,
 } from 'antd';
 import moment from 'moment';
 import Markdown from '@/components/markdown';
-// import 'github-markdown-css/github-markdown.css';
 import styles from './index.less'
 
 const { TextArea } = Input;
 
-const Editor = ({ onChange, onSubmit, submitting, value }) => (
-  <div>
-    <Form.Item>
-      <TextArea rows={4} onChange={onChange} value={value} />
-    </Form.Item>
-    <Form.Item>
-      <Button htmlType="submit" loading={submitting} onClick={onSubmit} type="primary">
-        添加评论
-      </Button>
-    </Form.Item>
-  </div>
-);
-
-@connect(({ home, user }) => {
+@connect(({ home, user, loading }) => {
   return {
     home,
     user,
+    submitting: loading.effects['home/createComment'],
+    detailLoading: loading.effects['home/getIssueDetail'],
+    commentLoading: loading.effects['home/getCommentList']
   };
 })
 class Detail extends Component {
@@ -51,23 +42,61 @@ class Detail extends Component {
   }
 
   componentDidMount() {
-    const { match: {
-      params: {
-        id,
+    const { 
+      match: {
+        params: { id } 
+      },
+      user: {
+        userInfo: {
+          isLogin
+        }
+      },
+      dispatch,
+      location: {
+        query = {}
       }
-    }, dispatch } = this.props;
+    } = this.props;
 
     this.id = id;
 
     dispatch({
       type: 'home/getIssueDetail',
       payload: { id }
+    }).then(() => {
+      if (query) {
+        let container = null;
+        if (!isLogin) {
+          container = document.getElementById('loginContainer')
+        } else if (query.scroll === 'like') {
+          container = document.getElementById('likesContainer')
+        }
+        if (container) {
+          container.scrollIntoView({ block: 'start', behavior: 'smooth' })
+        }
+      }
     })
 
     dispatch({
       type: 'home/getCommentList',
       payload: { id }
+    }).then(() => {
+      if (query) {
+        let container = null;
+        if (!isLogin) {
+          container = document.getElementById('loginContainer')
+        } else if (query.scroll === 'comment') {
+          container = document.getElementById('commentContainer')
+        }
+        if (container) {
+          container.scrollIntoView({ block: 'start', behavior: 'smooth' })
+        }
+      }
     });
+
+    dispatch({
+      type: 'home/listReactionForAnIssue',
+      payload: { id }
+    })
   }
 
   handleSubmit = () => {
@@ -108,7 +137,13 @@ class Detail extends Component {
 
   // 表情 type: +1, -1, laugh, confused, heart, hooray, rocket, eyes
   handleReaction = (item, type) => {
-    const { dispatch } = this.props;
+    const { dispatch, user: { userInfo = {} }, } = this.props;
+    const { isLogin } = userInfo;
+    if(!isLogin) {
+      message.info('请先使用github账号登录！')
+      return;
+    }
+    
     this.setState({
       action: 'liked',
     });
@@ -123,6 +158,17 @@ class Detail extends Component {
   };
 
   handleReply = item => {
+    const {
+      user: {
+        userInfo: {
+          isLogin
+        }
+      },
+    } = this.props;
+    if(!isLogin) {
+      message.info('请先使用github账号登录！')
+      return;
+    }
     const { comment } = this.state
     const replyCommentBody = item.body
     let replyCommentArray = replyCommentBody.split('\n')
@@ -134,6 +180,21 @@ class Detail extends Component {
     this.setState({ comment: replyCommentArray.join('\n') }, () => {
       this.commentText.focus();
     })
+  }
+
+  createReactionForIssue = () => {
+    const { dispatch, user: { userInfo = {}} } = this.props;
+    const { isLogin } = userInfo;
+    if(!isLogin) {
+      message.info('请先使用github账号登录！')
+      return;
+    }
+    dispatch({
+      type: 'home/createReactionForIssue',
+      payload: {
+        id: this.id,
+      }
+    });
   }
 
   // 格式化actions 
@@ -208,6 +269,24 @@ class Detail extends Component {
     ];
   }
 
+  renderEditor = (onChange, onSubmit, submitting, value) => (
+    <div>
+      <Form.Item>
+        <TextArea
+          ref={text => this.commentText = text}
+          rows={4}
+          onChange={onChange}
+          value={value}
+        />
+      </Form.Item>
+      <Form.Item>
+        <Button htmlType="submit" loading={submitting} onClick={onSubmit} type="primary" id="commentContainer">
+          添加评论
+      </Button>
+      </Form.Item>
+    </div>
+  );
+
   render() {
     const {
       comment,
@@ -216,76 +295,74 @@ class Detail extends Component {
       home: {
         commentList = [],
         issueDetail: { body = '' },
+        likes = [],
       },
-      user: { userInfo = {} }
+      user: { userInfo = {} },
+      submitting = false,
+      detailLoading = false,
+      commentLoading = false,
     } = this.props;
 
     const isLogin = userInfo.isLogin ? true : false;
 
     return (
       <div className={styles.detail}>
-        <Markdown dataSource={body} />
-        <List
-          className="comment-list"
-          header={`共${commentList.length}条回复`}
-          itemLayout="horizontal"
-          dataSource={commentList}
-          renderItem={item => (
-            <li>
+        <Skeleton loading={detailLoading} active>
+          <Markdown dataSource={body} />
+          <div className={styles.append} id="likesContainer">
+            <Icon type="like" theme="twoTone" twoToneColor="#eb2f96" onClick={this.createReactionForIssue} />
+            <span className={styles.number}>{likes.length}</span>
+          </div>
+        </Skeleton>
+        
+        <Skeleton loading={commentLoading} active avatar>
+          <List
+            className="comment-list"
+            header={`共${commentList.length}条回复`}
+            itemLayout="horizontal"
+            dataSource={commentList}
+            renderItem={item => (
+              <li>
+                <Comment
+                  actions={this.formatAction(item)}
+                  author={item.author_association}
+                  avatar={item.user.avatar_url}
+                  content={< Markdown dataSource={item.body} />}
+                  datetime={this.formatTime(item.updated_at)}
+                />
+              </li>
+            )}
+          />
+          {
+            isLogin ? (
               <Comment
-                actions={this.formatAction(item)}
-                author={item.author_association}
-                avatar={item.user.avatar_url}
-                content={< Markdown dataSource={item.body} />}
-                datetime={this.formatTime(item.updated_at)}
+                avatar={
+                  <Avatar
+                    src={userInfo.avatar_url ? userInfo.avatar_url : 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'}
+                    alt="Use photo"
+                  />
+                }
+                content={
+                  this.renderEditor(this.handleChange, this.handleSubmit, submitting, comment)
+                }
               />
-            </li>
-          )}
-        />
-        {
-          isLogin ?  (
-            <Comment
-              avatar={
-                <Avatar
-                  src={userInfo.avatar_url ? userInfo.avatar_url : 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'}
-                  alt="Use photo"
-                />
-              }
-              content={
-                <TextArea
-                  ref={t => { this.commentText = t }}
-                  value={comment}
-                  rows={4}
-                  onChange={this.handleChange}
-                  onFocus={this.handleCommentFocus}
-                  onBlur={this.handleCommentBlur}
-                  onKeyDown={this.handleCommentKeyDown}
-                />
-                // <Editor
-                //   ref = {textarea => this.commentText = textarea}
-                //   onChange={this.handleChange}
-                //   onSubmit={this.handleSubmit}
-                //   submitting={this.submitting}
-                //   value={comment}
-                // />
-              }
-            />
-          ) : null
-        }
+            ) : null
+          }
 
-        {
-          !isLogin ? (
-            <div className={styles.loginWrap}>
-              <Button
-                type="primary"
-                onClick={() => {
-                  window.location.href = 'https://github.com/login/oauth/authorize?client_id=Iv1.8fd715c6f01d9c3b&redirect_uri=http://localhost:8000';
-                }}>
-                github登录
+          {
+            !isLogin ? (
+              <div className={styles.loginWrap} id="loginContainer">
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    window.location.href = 'https://github.com/login/oauth/authorize?client_id=Iv1.8fd715c6f01d9c3b&redirect_uri=http://localhost:8000';
+                  }}>
+                  github登录
               </Button>
-            </div>
-          ) : null
-        }
+              </div>
+            ) : null
+          }
+        </Skeleton>
       </div>
     )
   }

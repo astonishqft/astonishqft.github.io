@@ -4,6 +4,8 @@ import {
   getIssueDetail,
   createReaction,
   getIssuesList,
+  createReactionForAnIssue,
+  listReactionForAnIssue,
 } from '@/services';
 
 import { message } from 'antd';
@@ -15,6 +17,7 @@ export default {
     issueDetail: '',
     issuesList: [],
     copyIssueList: [],
+    likes: [],
   },
   effects: {
     * getCommentList({ payload }, { call, put }) {
@@ -42,9 +45,7 @@ export default {
     },
 
     * getIssueDetail({ payload }, { call, put }) {
-      /* put方法触发一个reducer */
       const { id } = payload;
-
       const { data, status } = yield call(getIssueDetail, id);
       if (status === 200) {
         yield put({
@@ -83,7 +84,34 @@ export default {
         });
       }
     },
+
+    * createReactionForIssue({ payload }, { call, put }) {
+      const { id } = payload;
+      const { status } = yield call(createReactionForAnIssue, id);
+      if ([200, 201].includes(status)) {
+        yield put({
+          type: 'listReactionForAnIssue',
+          payload: {
+            id,
+          }
+        });
+      }
+    },
+
+    * listReactionForAnIssue({ payload }, { call, put }) {
+      const { id } = payload;
+      const { status, data } = yield call(listReactionForAnIssue, id);
+      if(status === 200) {
+        yield put({
+          type: 'save',
+          payload: {
+            likes: data
+          }
+        })
+      }
+    }
   },
+
   reducers: {
     save: (state, { payload }) => ({
       ...state,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Input, Menu, Avatar, Dropdown, Icon } from 'antd';
 import { connect } from 'dva';
 import styles from './index.less';
@@ -69,17 +69,22 @@ class Header extends React.Component {
               placeholder="请搜索"
               allowClear
               onSearch={value => this.handleSearch(value)}
-              style={{width: '300px'}} />
-            <Avatar
-              className={styles.avatar}
-              src={avatarUrl}
+              style={{width: '300px'}}
             />
-            <Dropdown overlay={this.renderMenu()}>
-              <Icon type="more" style={{ color: '#1DA57A', fontSize: 34 }} />
-            </Dropdown>
+            {
+              userInfo.isLogin ? (
+                <Fragment>
+                  <Avatar
+                    className={styles.avatar}
+                    src={avatarUrl}
+                  />
+                  <Dropdown overlay={this.renderMenu()}>
+                    <Icon type="more" style={{ color: '#1DA57A', fontSize: 34 }} />
+                  </Dropdown>
+                </Fragment>
+              ) : null
+            }
           </div>
-
-          
         </div>
       </div>
     )

@@ -54,7 +54,6 @@ class Index extends Component {
         accumulator[current.time].total++;
         accumulator[current.time].item.push(current);
         accumulator[current.time].number = current.number;
-
       }
       else {
         accumulator[current.time] = {
@@ -65,7 +64,6 @@ class Index extends Component {
       }
       return accumulator;
     }, {});
-
     return result;
   }
 
@@ -132,9 +130,10 @@ class Index extends Component {
               className={styles.listItem}
               key={item.title}
               actions={[
-                // <IconText type="star-o" text="156" key="list-vertical-star-o" />,
-                <IconText type="like-o" text={item.reactions['+1']} key="list-vertical-like-o" />,
-                <IconText type="message" text={item.comments} key="list-vertical-message" />,
+                <Link to={`/${item.number}?scroll=like`}><IconText type="like-o" text={item.reactions['+1']} /></Link>
+                ,
+                <Link to={`/${item.number}?scroll=comment`}><IconText type="message" text={item.comments} /></Link>
+                ,
               ]}
               extra={
                 <img

@@ -36,6 +36,37 @@ const getReactionList = (comment_id) => {
   });
 }
 
+// Create reaction for an issue
+const createReactionForAnIssue = issue_number => {
+  let headers = {}
+  const token = localStorage.getItem('github_token');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  return axios({
+    method: 'post',
+    headers: { 'Accept': 'application/vnd.github.squirrel-girl-preview', ...headers },
+    url: `${githubApi}/issues/${issue_number}/reactions`,
+    data: {
+      content: '+1',
+    }
+  });
+}
+
+// List reactions for an issue
+const listReactionForAnIssue = issue_number => {
+  let headers = {}
+  const token = localStorage.getItem('github_token');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  return axios({
+    method: 'GET',
+    headers: { 'Accept': 'application/vnd.github.squirrel-girl-preview', ...headers },
+    url: `${githubApi}/issues/${issue_number}/reactions`,
+  });
+}
+
 // Create reaction for an issue comment
 const createReaction = (comment_id, type) => {
   let headers = {}
@@ -101,4 +132,6 @@ export {
   createComment,
   githubAuth,
   getUser,
-};
+  createReactionForAnIssue,
+  listReactionForAnIssue,
+}
