@@ -355,7 +355,7 @@ class Detail extends Component {
                 <Button
                   type="primary"
                   onClick={() => {
-                    window.location.href = 'https://github.com/login/oauth/authorize?client_id=Iv1.8fd715c6f01d9c3b&redirect_uri=http://localhost:8000';
+                    window.location.href = 'https://github.com/login/oauth/authorize?client_id=Iv1.8fd715c6f01d9c3b&redirect_uri=https://astonishqft.github.io';
                   }}>
                   github登录
               </Button>
