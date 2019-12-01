@@ -100,7 +100,7 @@ class Index extends Component {
   }
 
   handleTagChange = (tag) => {
-    console.log(tag, 7777)
+    // TODO
   }
 
   render() {

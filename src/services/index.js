@@ -112,14 +112,10 @@ const createComment = (issue_number, body) => {
   });
 }
 
-const githubAuth = (code) => {
-  // clientID = CLIENT_ID, clientSecret = CLIENT_SECRET, code
-  const clientID = 'Iv1.8fd715c6f01d9c3b';
-  const clientSecret = '092bfa8ea626471ce1de470b780cf865456be73b';
-  // const code = '68eaa8d392aebe765052'
+const githubAuth = code => {
   return axios({
     method: 'POST',
-    url: `https://now-blog-server.1551601581.now.sh/api/githubAuth?code=${code}&clientID=${clientID}&clientSecret=${clientSecret}&=88877766`,
+    url: `https://now-blog-server.1551601581.now.sh/api/githubAuth?code=${code}`,
   });
 }
 

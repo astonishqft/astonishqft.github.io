@@ -326,7 +326,7 @@ class Detail extends Component {
                 <Comment
                   actions={this.formatAction(item)}
                   author={item.author_association}
-                  avatar={item.user.avatar_url}
+                  avatar={item.user.avatar_url || 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'}
                   content={< Markdown dataSource={item.body} />}
                   datetime={this.formatTime(item.updated_at)}
                 />
