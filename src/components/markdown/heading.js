@@ -9,12 +9,13 @@ const elements = {
   h6: "h6"
 };
 
-function Heading({ level, children, ...props }) {
-  return React.createElement(elements[level] || elements.h1, props, children);
+function Heading({ level, index, children, ...props }) {
+  const eleProps = { ...props, className: `heading heading-${level}`, 'data-level': index }
+  return React.createElement(elements[level] || elements.h1, eleProps, children);
 }
 
-Heading.defaultProps = {
-  type: "h1"
-};
+// Heading.defaultProps = {
+//   type: "h1",
+// };
 
 export default Heading;

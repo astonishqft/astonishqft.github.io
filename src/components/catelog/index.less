@@ -1,0 +1,50 @@
+// size
+@fontSize: 14px;
+@gapOuter: 15px;
+@gapInner: 10px;
+@borderRadius: 4px;
+@primaryColor: #8e24aa;
+
+.catelog {
+  list-style-type: none;
+  padding: @gapInner;
+  border: 1px solid #ccc;
+  width: 320px;
+  position: fixed;
+  right: 40px;
+  top: 118px;
+  box-shadow: 3px 3px 4px rgba(0,0,0,.08);
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  li {
+    cursor: pointer;
+    margin-bottom: @gapInner;
+    &.active {
+      color: @primaryColor;
+      font-weight: bold;
+    }
+    &.level-1 {
+      font-size: @fontSize * 1.2;
+    }
+    &.level-2 {
+      font-size: @fontSize;
+      margin-left: @gapInner;
+    }
+    &.level-3 {
+      font-size: @fontSize * .9;
+      margin-left: @gapInner * 1.5;
+    }
+    &.level-4 {
+      font-size: @fontSize * .7;
+      margin-left: @gapInner * 2;
+    }
+    &.level-5 {
+      font-size: @fontSize * .5;
+      margin-left: @gapInner * 2.5;
+    }
+    &.level-6 {
+      font-size: @fontSize * .3;
+      margin-left: @gapInner * 3;
+    }
+  }
+}

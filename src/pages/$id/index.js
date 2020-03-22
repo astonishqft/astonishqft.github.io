@@ -13,6 +13,7 @@ import {
   message,
 } from 'antd';
 import moment from 'moment';
+import Catelog from '@/components/catelog';
 import Markdown from '@/components/markdown';
 import styles from './index.less'
 
@@ -38,13 +39,16 @@ class Detail extends Component {
     comment: '',
     detail: '',
     commentList: [],
+    headings: [],
     action: null,
   }
 
+  article = null;
+
   componentDidMount() {
-    const { 
+    const {
       match: {
-        params: { id } 
+        params: { id }
       },
       user: {
         userInfo: {
@@ -73,6 +77,9 @@ class Detail extends Component {
         if (container) {
           container.scrollIntoView({ block: 'start', behavior: 'smooth' })
         }
+
+        this.getHeadings();
+
       }
     })
 
@@ -96,7 +103,23 @@ class Detail extends Component {
     dispatch({
       type: 'home/listReactionForAnIssue',
       payload: { id }
-    })
+    });
+  }
+
+  getHeadings = () => {
+    // 获取heading，生成右侧锚点
+    const headingEle = this.article.querySelectorAll('.heading');
+    if (headingEle && Array.from(headingEle).length !==0 ) {
+      const headings = Array.from(headingEle).map(heading => ({
+        title: heading.innerText,
+        id: heading.id,
+        level: Number(heading.dataset.level),
+        offsetTop: heading.offsetTop
+      }));
+      this.setState({
+        headings,
+      });
+    }
   }
 
   handleSubmit = () => {
@@ -112,7 +135,7 @@ class Detail extends Component {
         value: comment,
       }
     }).then(data => {
-      if(data) {
+      if (data) {
         this.setState({
           comment: '',
         });
@@ -139,11 +162,11 @@ class Detail extends Component {
   handleReaction = (item, type) => {
     const { dispatch, user: { userInfo = {} }, } = this.props;
     const { isLogin } = userInfo;
-    if(!isLogin) {
+    if (!isLogin) {
       message.info('请先使用github账号登录！')
       return;
     }
-    
+
     this.setState({
       action: 'liked',
     });
@@ -165,7 +188,7 @@ class Detail extends Component {
         }
       },
     } = this.props;
-    if(!isLogin) {
+    if (!isLogin) {
       message.info('请先使用github账号登录！')
       return;
     }
@@ -183,9 +206,9 @@ class Detail extends Component {
   }
 
   createReactionForIssue = () => {
-    const { dispatch, user: { userInfo = {}} } = this.props;
+    const { dispatch, user: { userInfo = {} } } = this.props;
     const { isLogin } = userInfo;
-    if(!isLogin) {
+    if (!isLogin) {
       message.info('请先使用github账号登录！')
       return;
     }
@@ -290,6 +313,7 @@ class Detail extends Component {
   render() {
     const {
       comment,
+      headings = [],
     } = this.state;
     const {
       home: {
@@ -306,19 +330,36 @@ class Detail extends Component {
     const isLogin = userInfo.isLogin ? true : false;
 
     return (
-      <div className={styles.detail}>
+      <div className={styles.detail} ref={ref => this.article = ref}>
         <Skeleton loading={detailLoading} active>
           <Markdown dataSource={body} />
           <div className={styles.append} id="likesContainer">
             <Icon type="like" theme="twoTone" twoToneColor="#eb2f96" onClick={this.createReactionForIssue} />
             <span className={styles.number}>{likes.length}</span>
           </div>
+          <Catelog data={headings} />
         </Skeleton>
-        
+
         <Skeleton loading={commentLoading} active avatar>
           <List
             className="comment-list"
-            header={`共${commentList.length}条回复`}
+            header={(
+              <div className={styles['comment-header']}>
+                <span>共 <b>{commentList.length}</b> 条回复</span>
+                {
+                  !isLogin ? (
+                    <div className={styles.loginWrap} id="loginContainer">
+                      <Button
+                        type="primary"
+                        onClick={() => {
+                          window.location.href = 'https://github.com/login/oauth/authorize?client_id=Iv1.8fd715c6f01d9c3b&redirect_uri=https://qifutao.com';
+                        }}>
+                        github登录
+                      </Button>
+                    </div>) : null
+                }
+              </div>
+              )}
             itemLayout="horizontal"
             dataSource={commentList}
             renderItem={item => (
@@ -348,21 +389,10 @@ class Detail extends Component {
               />
             ) : null
           }
-
-          {
-            !isLogin ? (
-              <div className={styles.loginWrap} id="loginContainer">
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    window.location.href = 'https://github.com/login/oauth/authorize?client_id=Iv1.8fd715c6f01d9c3b&redirect_uri=https://astonishqft.github.io';
-                  }}>
-                  github登录
-              </Button>
-              </div>
-            ) : null
-          }
         </Skeleton>
+        <div className={styles.footer}>
+          <b>&copy;2019-2020 astonishqft. All rights reserved.</b>
+        </div>
       </div>
     )
   }

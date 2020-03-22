@@ -7,7 +7,9 @@ const getIssuesList = () => {
   return axios({
     method: 'GET',
     url: `${githubApi}/issues`,
-    headers: { 'Accept': 'application/vnd.github.squirrel-girl-preview' },
+    headers: {
+      'Accept': 'application/vnd.github.squirrel-girl-preview',
+    },
   });
 }
 
@@ -62,7 +64,10 @@ const listReactionForAnIssue = issue_number => {
   }
   return axios({
     method: 'GET',
-    headers: { 'Accept': 'application/vnd.github.squirrel-girl-preview', ...headers },
+    headers: {
+      'Accept': 'application/vnd.github.squirrel-girl-preview',
+      ...headers,
+    },
     url: `${githubApi}/issues/${issue_number}/reactions`,
   });
 }
@@ -90,7 +95,8 @@ const getCommentByIssueId = issue_number => {
     method: 'GET',
     headers: {
       // 'Cache-Control': 'no-cache',
-      'Accept': 'application/vnd.github.squirrel-girl-preview' },
+      'Accept': 'application/vnd.github.squirrel-girl-preview',
+    },
     url: `${githubApi}/issues/${issue_number}/comments?${generateUUID()}`,
   });
 }

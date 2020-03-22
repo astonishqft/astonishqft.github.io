@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import { Input, Menu, Avatar, Dropdown, Icon } from 'antd';
 import { connect } from 'dva';
 import styles from './index.less';
+import blogPng from '../../assets/blog.png';
 
 @connect(({ user }) => {
   return { user };
@@ -11,10 +12,10 @@ class Header extends React.Component {
     const { dispatch } = this.props;
     const githubToken = localStorage.getItem('github_token');
     if (githubToken) {
-      dispatch({ 
-        type: 'user/getUser', 
-        payload: { 
-          token: localStorage.getItem('github_token'), 
+      dispatch({
+        type: 'user/getUser',
+        payload: {
+          token: localStorage.getItem('github_token'),
         },
       });
     }
@@ -56,20 +57,20 @@ class Header extends React.Component {
   render() {
     const {
       user: {
-       userInfo = {}
+        userInfo = {}
       }
     } = this.props;
     const avatarUrl = userInfo.avatar_url ? userInfo.avatar_url : "https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png";
     return (
       <div className={styles.header}>
         <div className={styles.container}>
-          <div className={styles.title}>astonish blog</div>
+          <div className={styles.title}><img src={blogPng} alt="" /></div>
           <div className={styles.tool}>
             <Input.Search
-              placeholder="请搜索"
+              placeholder="请输入关键字搜索"
               allowClear
               onSearch={value => this.handleSearch(value)}
-              style={{width: '300px'}}
+              style={{ width: '175px' }}
             />
             {
               userInfo.isLogin ? (
