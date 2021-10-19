@@ -1,1 +1,0 @@
-(window["webpackJsonp"]=window["webpackJsonp"]||[]).push([[5],{SGa5:function(n,e,t){"use strict";t.r(e);var a=t("q1tI"),o=t.n(a);class r extends a["Component"]{render(){return o.a.createElement("div",null,"Login88888")}}e["default"]=r}}]);
