@@ -8,28 +8,16 @@
     "precommit": "lint-staged"
   },
   "dependencies": {
-    "antd": "^3.19.5",
+    "@umijs/plugin-antd": "^0.11.0",
+    "@umijs/plugin-dva": "^0.13.0",
+    "antd": "^4.16.13",
     "axios": "^0.19.0",
-    "dva": "^2.6.0-beta.6",
     "github-markdown-css": "^3.0.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-markdown": "^4.2.2",
-    "react-syntax-highlighter": "^11.0.2"
-  },
-  "devDependencies": {
-    "babel-eslint": "^9.0.0",
-    "eslint": "^5.4.0",
-    "eslint-config-umi": "^1.4.0",
-    "eslint-plugin-flowtype": "^2.50.0",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-jsx-a11y": "^5.1.1",
-    "eslint-plugin-react": "^7.11.1",
-    "husky": "^0.14.3",
-    "lint-staged": "^7.2.2",
-    "react-test-renderer": "^16.7.0",
-    "umi": "^2.7.7",
-    "umi-plugin-react": "^1.8.4"
+    "react-syntax-highlighter": "^11.0.2",
+    "umi": "^3.5.20"
   },
   "lint-staged": {
     "*.{js,jsx}": [
