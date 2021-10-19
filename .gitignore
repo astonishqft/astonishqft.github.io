@@ -1,4 +1,15 @@
-dist/
-node_modules/
-src/
+/node_modules
+
+# testing
+/coverage
+
+# UMI generated files.
+.umi
+.umi-production
+
+# production
+/build
+/dist
+
+.vscode/
 .DS_Store/

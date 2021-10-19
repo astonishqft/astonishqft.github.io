@@ -1,0 +1,46 @@
+.root {
+  position: fixed;
+  top: 70px;
+  width: 286px;
+  left: 20px;
+  :global(.ant-collapse) {
+    border-radius: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+  }
+  :global(.ant-collapse-header) {
+    line-height: 12px !important;
+  }
+  :global(.ant-collapse-content-box) {
+    padding: 6px 12px 6px 12px !important;
+  }
+  :global(.ant-collapse-content-box, .ant-list-item) {
+    padding: 8px 0 !important;
+  }
+  .timeLine {
+    box-shadow: 3px 3px 4px rgba(0,0,0,.08);
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    .title {
+      display: flex;
+      align-items: center;
+      height: 40px;
+      font-weight: bold;
+      margin-left: 15px;
+    }
+  }
+  .label {
+    box-shadow: 3px 3px 4px rgba(0,0,0,.08);
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    padding: 0 10px 10px 10px;
+    .title {
+      display: flex;
+      align-items: center;
+      height: 40px;
+      font-weight: bold;
+      margin-left: 15px;
+    }
+  }
+}
