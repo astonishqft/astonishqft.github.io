@@ -315,6 +315,7 @@ class Detail extends Component {
       comment,
       headings = [],
     } = this.state;
+
     const {
       home: {
         commentList = [],
@@ -391,7 +392,7 @@ class Detail extends Component {
           }
         </Skeleton>
         <div className={styles.footer}>
-          <b>&copy;2019-2020 astonishqft. All rights reserved.</b>
+          <b>&copy;2019-2021 astonishqft. All rights reserved.</b>
         </div>
       </div>
     )
