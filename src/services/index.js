@@ -118,6 +118,7 @@ const createComment = (issue_number, body) => {
   });
 }
 
+// 为了解决github的认证接口无法跨域的问题，需要改为在vercel上部署一个sreverless服务
 const githubAuth = code => {
   return axios({
     method: 'POST',
